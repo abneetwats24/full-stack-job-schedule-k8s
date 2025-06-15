@@ -1,7 +1,7 @@
 global:
   imagePullPolicy: IfNotPresent
   ingress:
-    host: {{ .Values.ingress.host | default "demo.local" }}
+    host: demo.local
 
 namespace: async-stack
 
