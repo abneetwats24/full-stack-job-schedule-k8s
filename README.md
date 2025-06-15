@@ -29,35 +29,35 @@ helm uninstall stack -n async-stack  # cleanup
 
 ```mermaid
 graph TD
-    subgraph Frontend (E)
+    subgraph "Frontend (E)"
         E_Browser[User Browser / Mobile App]
     end
 
-    subgraph Kubernetes Cluster
-        subgraph API Layer
+    subgraph "Kubernetes Cluster"
+        subgraph "API Layer"
             Ingress[Kubernetes Ingress / LoadBalancer] --> A[API Server (A) - Pods]
             A -- Stores correlation_id:callback_url --> Redis[Redis / Cache]
             A -- Publishes Request --> Q1[RabbitMQ Q1: Airflow Requests]
         end
 
-        subgraph Messaging Layer
+        subgraph "Messaging Layer"
             Q1 -- Consumes --> C[Consumer Service (C) - Pods]
             D_FinalTask[Airflow DAG (D) - Final Task] -- Publishes Result --> Q2[RabbitMQ Q2: Airflow Results]
         end
 
-        subgraph Workflow Layer
+        subgraph "Workflow Layer"
             C -- Triggers DAG with correlation_id --> Airflow_Scheduler[Airflow Scheduler]
             Airflow_Scheduler -- Creates Pods for Tasks --> Airflow_Worker[Airflow Worker Pods (Kubernetes Executor)]
             Airflow_Worker -- Performs Processing --> D_Processing[Airflow DAG Logic]
         end
 
-        subgraph Notification Layer
+        subgraph "Notification Layer"
             Q2 -- Consumes --> N[Notification Service (N) - Pods]
             N -- Retrieves callback_url --> Redis
             N -- Sends Webhook --> Ingress_Frontend[Frontend's Webhook Endpoint]
         end
 
-        subgraph Data Layer
+        subgraph "Data Layer"
             DB[Database (Processed Data)]
         end
     end
