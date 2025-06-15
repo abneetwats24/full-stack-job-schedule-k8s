@@ -54,6 +54,8 @@ airflow:
         name: stack-airflow-dags
   service:
     type: ClusterIP
+  postgresql:
+    enabled: false
 
 api:
   replicaCount: 1
