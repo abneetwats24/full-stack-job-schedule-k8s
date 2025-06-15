@@ -6,7 +6,7 @@ description: Umbrella chart for async-processing demo
 dependencies:
   # Upstream infra
   - name: redis
-    version: 18.13.2
+    version: 19.0.0
     repository: https://charts.bitnami.com/bitnami
   - name: rabbitmq
     version: 12.7.1
