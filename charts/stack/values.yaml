@@ -1,0 +1,118 @@
+global:
+  imagePullPolicy: IfNotPresent
+
+namespace: async-stack
+
+ingress:
+  host: demo.local
+  tls: false
+
+rabbitmq:
+  replicaCount: 1                 
+  clustering:
+    enabled: false
+  nodeSelector:
+    kubernetes.io/hostname: worker-node1
+  persistence:
+    enabled: true
+    storageClass: openebs-hostpath
+    size: 2Gi
+
+redis:
+  architecture: standalone
+  master:
+    nodeSelector:
+      kubernetes.io/hostname: worker-node1
+    persistence:
+      enabled: true
+      size: 2Gi
+
+postgresql:
+  architecture: standalone       
+  primary:
+    nodeSelector:
+      kubernetes.io/hostname: worker-node1
+    persistence:
+      enabled: true
+      storageClass: openebs-hostpath
+      size: 2Gi
+
+airflow:
+  executor: KubernetesExecutor
+  images:
+    tag: "2.9.0"
+  config:
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:postgres@stack-postgresql:5432/airflow
+  dags:
+    path: /opt/airflow/dags
+  dagsConfigMaps:
+    - name: stack-airflow-dags
+  extraVolumeMounts:
+    - name: dags
+      mountPath: /opt/airflow/dags
+  extraVolumes:
+    - name: dags
+      configMap:
+        name: stack-airflow-dags
+  service:
+    type: ClusterIP
+
+api:
+  replicaCount: 1
+  image:
+    repository: abneetwats24/api-svc
+    tag: latest
+  env:
+    REQUEST_Q: airflow_requests
+    REDIS_URL: redis://stack-redis-master:6379/0
+    RABBITMQ_URL: amqp://guest:guest@stack-rabbitmq:5672/
+  ingress:
+    enabled: true
+    path: /api
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+
+consumer:
+  replicaCount: 1
+  image:
+    repository: abneetwats24/consumer-svc
+    tag: latest
+  env:
+    REQUEST_Q: airflow_requests
+    AIRFLOW_HOST: http://stack-airflow-webserver:8080
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+
+notification:
+  replicaCount: 1
+  image:
+    repository: abneetwats24/notification-svc
+    tag: latest
+  env:
+    RESULT_Q: airflow_results
+    REDIS_URL: redis://stack-redis-master:6379/0
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+
+frontend:
+  replicaCount: 1
+  image:
+    repository: abneetwats24/frontend
+    tag: latest
+  ingress:
+    enabled: true
+    path: /
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70

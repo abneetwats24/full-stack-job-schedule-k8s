@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "consumer.fullname" . }}
+  labels: { app: consumer }
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels: { app: consumer }
+  template:
+    metadata:
+      labels: { app: consumer }
+    spec:
+      containers:
+        - name: consumer
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy | default "IfNotPresent" }}
+          env:
+            - name: REQUEST_Q
+              value: {{ .Values.env.REQUEST_Q | quote }}
+            - name: AIRFLOW_HOST
+              value: {{ .Values.env.AIRFLOW_HOST | quote }}
+          command: ["python", "-m", "services.consumer.main"]
