@@ -1,0 +1,17 @@
+# python
+__pycache__/
+*.pyc
+
+# node
+node_modules/
+
+# virtual envs
+.env
+venv/
+
+# IDE
+.idea/
+.vscode/
+
+# Helm chart build outputs
+charts/**/charts/

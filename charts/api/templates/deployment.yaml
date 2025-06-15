@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "api.fullname" . }}
+  labels: { app: api }
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels: { app: api }
+  template:
+    metadata:
+      labels: { app: api }
+    spec:
+      containers:
+        - name: api
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy | default "IfNotPresent" }}
+          env:
+            - name: REQUEST_Q
+              value: {{ .Values.env.REQUEST_Q | quote }}
+            - name: REDIS_URL
+              value: {{ .Values.env.REDIS_URL | quote }}
+            - name: RABBITMQ_URL
+              value: {{ .Values.env.RABBITMQ_URL | quote }}
+          ports:
+            - containerPort: 8000
+          command: ["uvicorn", "services.api.main:app", "--host", "0.0.0.0", "--port", "8000"]

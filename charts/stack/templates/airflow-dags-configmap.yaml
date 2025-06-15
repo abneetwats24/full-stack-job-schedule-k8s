@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: stack-airflow-dags
+  labels:
+    app: airflow
+
+data:
+{{ (.Files.Glob "airflow/dags/*.py").AsConfig | indent 2 }}
