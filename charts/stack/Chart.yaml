@@ -22,13 +22,13 @@ dependencies:
   # Local micro-services (directories under charts/)
   - name: api
     version: 0.1.0
-    repository: "file://./charts/api"
+    repository: "file://../api"
   - name: consumer
     version: 0.1.0
-    repository: "file://./charts/consumer"
+    repository: "file://../consumer"
   - name: notification
     version: 0.1.0
-    repository: "file://./charts/notification"
+    repository: "file://../notification"
   - name: frontend
     version: 0.1.0
-    repository: "file://./charts/frontend"
+    repository: "file://../frontend"
