@@ -40,13 +40,11 @@ postgresql:
 airflow:
   executor: KubernetesExecutor
   images:
-    tag: "2.9.0"
+    airflow:
+      tag: "2.9.0"
   config:
-    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:postgres@stack-postgresql:5432/airflow
-  dags:
-    path: /opt/airflow/dags
-  dagsConfigMaps:
-    - name: stack-airflow-dags
+    database:
+      sql_alchemy_conn: postgresql+psycopg2://postgres:postgres@stack-postgresql:5432/airflow
   extraVolumeMounts:
     - name: dags
       mountPath: /opt/airflow/dags
