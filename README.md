@@ -35,38 +35,53 @@ graph TD
 
     subgraph "Kubernetes Cluster"
         subgraph "API Layer"
-            Ingress[Kubernetes Ingress / LoadBalancer] --> A[API Server (A) - Pods]
-            A -- "Stores correlation_id→callback_url" --> Redis[Redis / Cache]
-            A -- Publishes Request --> Q1[RabbitMQ Q1: Airflow Requests]
+            Ingress[Kubernetes Ingress / LoadBalancer]
+            A[API Server (A) - Pods]
         end
 
         subgraph "Messaging Layer"
-            Q1 -- Consumes --> C[Consumer Service (C) - Pods]
-            D_FinalTask["Airflow DAG (D) - Final Task"] -- "Publishes Result" --> Q2[RabbitMQ Q2: Airflow Results]
+            Q1[RabbitMQ Q1: Airflow Requests]
+            Q2[RabbitMQ Q2: Airflow Results]
+            C[Consumer Service (C) - Pods]
         end
 
         subgraph "Workflow Layer"
-            C -- "Triggers DAG with correlation_id" --> Airflow_Scheduler[Airflow Scheduler]
-            Airflow_Scheduler -- "Creates Pods for Tasks" --> Airflow_Worker["Airflow Worker Pods (Kubernetes Executor)"]
-            Airflow_Worker -- "Performs Processing" --> D_Processing[Airflow DAG Logic]
+            Airflow_Scheduler[Airflow Scheduler]
+            Airflow_Worker["Airflow Worker Pods (Kubernetes Executor)"]
+            D_Processing[Airflow DAG Logic]
+            D_FinalTask["Airflow DAG (D) - Final Task"]
         end
 
         subgraph "Notification Layer"
-            Q2 -- Consumes --> N["Notification Service (N) - Pods"]
-            N -- "Retrieves callback_url" --> Redis
-            N -- "Sends Webhook" --> Ingress_Frontend["Frontend's Webhook Endpoint"]
+            N["Notification Service (N) - Pods"]
+            Ingress_Frontend["Frontend's Webhook Endpoint"]
         end
 
         subgraph "Data Layer"
             DB[Database (Processed Data)]
         end
+
+        Redis[Redis / Cache]
     end
 
+    %% Connections outside subgraphs
     E_Browser --> Ingress
-    N -- "Webhook Notification" --> E_Browser
-    E_Browser -- "Fetches Processed Data (Optional)" --> DB
+    Ingress --> A
+    A -- "Stores correlation_id→callback_url" --> Redis
+    A -- "Publishes Request" --> Q1
+    Q1 --> C
+    C -- "Triggers DAG with correlation_id" --> Airflow_Scheduler
+    Airflow_Scheduler --> Airflow_Worker
+    Airflow_Worker --> D_Processing
     D_Processing -- "Stores Processed Data" --> DB
+    D_FinalTask -- "Publishes Result" --> Q2
+    Q2 --> N
+    N --> Redis
+    N --> Ingress_Frontend
+    N --> E_Browser
+    E_Browser --> DB
 
+    %% Styling
     style E_Browser fill:#ADD8E6,stroke:#333,stroke-width:2px
     style A fill:#DDA0DD,stroke:#333,stroke-width:2px
     style Redis fill:#FFDDC1,stroke:#333,stroke-width:2px
@@ -75,9 +90,11 @@ graph TD
     style Airflow_Scheduler fill:#ADD8E6,stroke:#333,stroke-width:2px
     style Airflow_Worker fill:#ADD8E6,stroke:#333,stroke-width:2px
     style D_Processing fill:#ADD8E6,stroke:#333,stroke-width:2px
+    style D_FinalTask fill:#ADD8E6,stroke:#333,stroke-width:2px
     style Q2 fill:#90EE90,stroke:#333,stroke-width:2px
     style N fill:#BAE1FF,stroke:#333,stroke-width:2px
     style DB fill:#FAFAD2,stroke:#333,stroke-width:2px
     style Ingress fill:#F0FFF0,stroke:#333,stroke-width:2px
     style Ingress_Frontend fill:#F0FFF0,stroke:#333,stroke-width:2px
+
 ```
