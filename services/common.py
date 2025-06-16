@@ -1,6 +1,6 @@
 import os
 import aio_pika
-import aioredis
+import redis.asyncio as redis
 
 
 async def get_rabbitmq_connection():
@@ -12,4 +12,4 @@ async def get_rabbitmq_connection():
 async def get_redis():
     """Return an async Redis client."""
     url = os.getenv("REDIS_URL", "redis://redis-master:6379/0")
-    return await aioredis.from_url(url, decode_responses=True)
+    return redis.from_url(url, decode_responses=True)
