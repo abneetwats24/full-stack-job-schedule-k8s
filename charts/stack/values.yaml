@@ -17,6 +17,7 @@ rabbitmq:
     kubernetes.io/hostname: worker-node1
   persistence:
     enabled: true
+    storageClass: openebs-zfspv
     size: 2Gi
 
 redis:
@@ -26,6 +27,7 @@ redis:
       kubernetes.io/hostname: worker-node1
     persistence:
       enabled: true
+      storageClass: openebs-zfspv
       size: 2Gi
 
 postgresql:
@@ -35,6 +37,7 @@ postgresql:
       kubernetes.io/hostname: worker-node1
     persistence:
       enabled: true
+      storageClass: openebs-zfspv
       size: 2Gi
 
 airflow:
