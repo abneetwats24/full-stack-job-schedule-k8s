@@ -59,7 +59,9 @@ airflow:
     type: ClusterIP
   postgresql:
     enabled: false
-
+  logs:
+    persistence:
+      enabled: false
 api:
   replicaCount: 1
   image:
